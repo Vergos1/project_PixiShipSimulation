@@ -1,163 +1,158 @@
 # Port Simulation
 
-Візуалізація роботи порту з анімаціями кораблів, чергами та управлінням пристанями.
+Visualization of port operations with ship animations, queues, and pier management.
 
-## Опис
+## Description
 
-Симуляція роботи порту, де кораблі припливають, обслуговуються на пристанях та відпливають. Проект реалізований з використанням об'єктно-орієнтованого підходу, TypeScript, Pixi.js для візуалізації та TweenJS для анімацій.
+A port simulation where ships arrive, are serviced at piers, and depart. The project is implemented using object-oriented approach, TypeScript, Pixi.js for visualization, and TweenJS for animations.
 
-## Функціональність
+## Functionality
 
-### Основні компоненти:
+### Main Components:
 
-1. **Море** - прямокутне робоче поле синього кольору
-2. **Порт** - виділена прямокутна область з одним входом
-   - Одночасно через вхід може проходити лише один корабель
-   - В порту 4 пристані, на початку усі вони порожні
-3. **Пристані** - прямокутні області
-   - Якщо пристань заповнена вантажем - прямокутник залитий кольором
-   - Якщо порожня - прозора
-   - До однієї пристані може приплисти одночасно один корабель
-4. **Кораблі** - прямокутники зеленого або червоного кольору
-   - **Зелені кораблі** - приходять порожніми, завантажуються вантажем
-   - **Червоні кораблі** - приходять з вантажем, розвантажуються
-   - Заповнений корабель відображається залитим кольором
-   - Порожній корабель - тільки контур
+1. **Sea** - rectangular blue work area
+2. **Port** - highlighted rectangular area with a single entrance
+   - Only one ship can pass through the entrance at a time
+   - The port has 4 piers, all empty at the start
+3. **Piers** - rectangular areas
+   - If a pier is filled with cargo - the rectangle is filled with color
+   - If empty - transparent
+   - Only one ship can dock at a pier at a time
+4. **Ships** - green or red rectangles
+   - **Green ships** - arrive empty, get loaded with cargo
+   - **Red ships** - arrive with cargo, get unloaded
+   - A filled ship is displayed as a filled rectangle
+   - An empty ship - only outline
 
-### Логіка роботи:
+### Work Logic:
 
-- Кораблі приходять з протилежного боку моря
-- Тип корабля (зелений/червоний) обирається випадково
-- Частота появи кораблів: **1 на 8 секунд**
-- Час перебування корабля у порту: **5 секунд**
-- Зелені кораблі стають у чергу, якщо у порту немає вантажу на вільних пристанях
-- Червоні кораблі стають у чергу, якщо всі вільні пристані заповнені
+- Ships arrive from the opposite side of the sea
+- Ship type (green/red) is chosen randomly
+- Ship spawn frequency: **1 every 8 seconds**
+- Time spent in port: **5 seconds**
+- Green ships queue if there is no cargo on free piers
+- Red ships queue if all free piers are filled
 
-## Технології
+## Technologies
 
-- **TypeScript** - типізація коду
-- **Pixi.js v8.8.1** - візуалізація та рендеринг
-- **TweenJS v25.0.0** - плавні анімації руху кораблів
-- **Vite** - збірка та розробка
-- **ООП** - об'єктно-орієнтована архітектура
+- **TypeScript** - code typing
+- **Pixi.js v8.8.1** - visualization and rendering
+- **TweenJS v25.0.0** - smooth ship movement animations
+- **Vite** - build and development
 
-## Структура проекту
+## Project Structure
 
 ```
 src/
 ├── app/
-│   ├── config.ts          # Конфігурація (розміри, таймінги, позиції)
-│   ├── index.ts           # Головний клас GameApp
+│   ├── config.ts          # Configuration (sizes, timings, positions)
+│   ├── index.ts           # Main GameApp class
 │   ├── port/
-│   │   ├── PortScene.ts   # Основна сцена з логікою симуляції
-│   │   ├── Port.ts        # Клас порту (управління пристанями та чергами)
-│   │   ├── Pier.ts        # Клас пристані
-│   │   ├── Ship.ts        # Клас корабля
-│   │   └── types.ts       # TypeScript типи
+│   │   ├── PortScene.ts   # Main scene with simulation logic
+│   │   ├── Port.ts        # Port class (pier and queue management)
+│   │   ├── Pier.ts        # Pier class
+│   │   ├── Ship.ts        # Ship class
+│   │   └── types.ts       # TypeScript types
 │   ├── ui/
-│   │   └── HUD.ts         # Логування подій
+│   │   └── HUD.ts         # Event logging
 │   └── utils/
-│       ├── tween.ts       # Утиліти для анімацій
-│       └── id.ts          # Генерація унікальних ID
-├── main.ts                # Точка входу
+│       ├── tween.ts       # Animation utilities
+│       └── id.ts          # Unique ID generation
+├── main.ts                # Entry point
 └── styles/
-    └── index.css          # Стилі
+    └── index.css          # Styles
 ```
 
-## Встановлення та запуск
+## Installation and Launch
 
-### Вимоги
+### Requirements
 
-- Node.js (версія 18 або вище)
-- npm або yarn
+- Node.js (version 18 or higher)
+- npm or yarn
 
-### Крок 1: Встановлення залежностей
+### Step 1: Install Dependencies
 
 ```bash
 npm install
 ```
 
-### Крок 2: Запуск у режимі розробки
+### Step 2: Run in Development Mode
 
 ```bash
 npm run dev
 ```
 
-Або:
+Or:
 
 ```bash
 npm start
 ```
 
-Після запуску відкрийте браузер за адресою, яку покаже Vite (зазвичай `http://localhost:5173`).
+After launch, open your browser at the address shown by Vite (usually `http://localhost:5173`).
 
-### Крок 3: Збірка для продакшну
+### Step 3: Build for Production
 
 ```bash
 npm run build
 ```
 
-Зібраний проект буде в папці `dist/`.
+The built project will be in the `dist/` folder.
 
-### Додаткові команди
+### Additional Commands
 
 ```bash
-# Перевірка форматування коду
+# Check code formatting
 npm run format:check
 
-# Форматування коду
+# Format code
 npm run format
 
-# Перевірка лінтером
+# Run linter
 npm run lint
 ```
 
-## Як це працює
+## How It Works
 
-### Архітектура
+### Architecture
 
-Проект використовує об'єктно-орієнтований підхід:
+The project uses an object-oriented approach:
 
-- **GameApp** - головний клас, ініціалізує Pixi.js Application
-- **PortScene** - основна сцена, керує симуляцією
-- **Port** - управляє пристанями та чергами кораблів
-- **Pier** - представляє одну пристань зі станом (EMPTY/FILLED)
-- **Ship** - представляє корабель з типом (RED/GREEN) та станом вантажу
+- **GameApp** - main class, initializes Pixi.js Application
+- **PortScene** - main scene, manages the simulation
+- **Port** - manages piers and ship queues
+- **Pier** - represents a single pier with state (EMPTY/FILLED)
+- **Ship** - represents a ship with type (RED/GREEN) and cargo state
 
-### Процес роботи
+### Workflow
 
-1. **Спавн корабля**: Кожні 8 секунд створюється новий корабель (випадковий тип)
-2. **Підхід до порту**: Корабель рухається до зони черги
-3. **Перевірка можливості обслуговування**:
-   - Зелені кораблі шукають пристань з вантажем (FILLED)
-   - Червоні кораблі шукають порожню пристань (EMPTY)
-4. **Черга**: Якщо немає відповідної пристані, корабель стає в чергу
-5. **Вхід у порт**: Через вхід може проходити лише один корабель одночасно
-6. **Обслуговування**: Корабель причалює до пристані, чекає 5 секунд
-7. **Обмін вантажем**:
-   - Червоний корабель розвантажується → пристань стає FILLED
-   - Зелений корабель завантажується → пристань стає EMPTY
-8. **Вихід**: Корабель виходить через вхід та відпливає
+1. **Ship Spawn**: Every 8 seconds a new ship is created (random type)
+2. **Approach to Port**: Ship moves to the queue area
+3. **Service Availability Check**:
+   - Green ships look for a pier with cargo (FILLED)
+   - Red ships look for an empty pier (EMPTY)
+4. **Queue**: If no appropriate pier is available, ship joins the queue
+5. **Port Entry**: Only one ship can pass through the entrance at a time
+6. **Service**: Ship docks at the pier, waits 5 seconds
+7. **Cargo Exchange**:
+   - Red ship unloads → pier becomes FILLED
+   - Green ship loads → pier becomes EMPTY
+8. **Exit**: Ship exits through the entrance and departs
 
-### Анімації
+### Animations
 
-Всі рухи кораблів реалізовані через TweenJS:
-- Підхід до порту
-- Вхід через вхід
-- Рух до пристані
-- Вихід з порту
-- Рух у черзі
+All ship movements are implemented using TweenJS:
+- Approach to port
+- Entry through entrance
+- Movement to pier
+- Exit from port
+- Movement in queue
 
-## Налаштування
+## Configuration
 
-Основні параметри можна змінити в `src/app/config.ts`:
+Main parameters can be changed in `src/app/config.ts`:
 
-- `spawnEveryMs` - частота появи кораблів (за замовчуванням 8000 мс)
-- `serviceTimeMs` - час обслуговування (за замовчуванням 5000 мс)
-- `maxShips` - максимальна кількість кораблів одночасно
-- `piers` - позиції та кількість пристаней
-- Розміри та позиції елементів
-
-## Ліцензія
-
-Приватний проект.
+- `spawnEveryMs` - ship spawn frequency (default 8000 ms)
+- `serviceTimeMs` - service time (default 5000 ms)
+- `maxShips` - maximum number of ships simultaneously
+- `piers` - positions and number of piers
+- Sizes and positions of elements
