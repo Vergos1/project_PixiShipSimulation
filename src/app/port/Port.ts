@@ -7,24 +7,24 @@ export class Port {
   constructor(public readonly piers: Pier[]) {}
 
   findPierForGreen(): number | null {
-    return this.piers.findIndex((p) => !p.occupied && p.state === "FILLED");
+    const idx = this.piers.findIndex((p) => !p.occupied && p.state === "FILLED");
+    return idx === -1 ? null : idx;
   }
 
   findPierForRed(): number | null {
-    return this.piers.findIndex((p) => !p.occupied && p.state === "EMPTY");
+    const idx = this.piers.findIndex((p) => !p.occupied && p.state === "EMPTY");
+    return idx === -1 ? null : idx;
   }
 
   canServe(type: ShipType) {
-    return type === "GREEN" ? this.findPierForGreen() !== -1 : this.findPierForRed() !== -1;
+    return type === "GREEN" ? this.findPierForGreen() !== null : this.findPierForRed() !== null;
   }
 
-  reservePier(index: number | null) {
-    if (index === null) return;
+  reservePier(index: number) {
     this.piers[index].setOccupied(true);
   }
 
-  releasePier(index: number | null) {
-    if (index === null) return;
+  releasePier(index: number) {
     this.piers[index].setOccupied(false);
   }
 }
