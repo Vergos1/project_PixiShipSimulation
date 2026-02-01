@@ -96,11 +96,14 @@ export class PortScene extends Container {
     await tweenTo(ship, { x: CONFIG.entranceX }, CONFIG.enterMs);
 
     const pier = this.piers[pierIndex!];
+    const dockX = pier.x + pier.width;
+    const dockY = pier.y + (CONFIG.pierH - CONFIG.shipH) / 2;
+
     await tweenTo(
       ship,
       {
-        x: pier.x + pier.width + 10,
-        y: pier.y,
+        x: dockX,
+        y: dockY,
       },
       CONFIG.dockMs,
     );
