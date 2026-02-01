@@ -36,11 +36,9 @@ export class Pier extends Container {
     this.frame.clear();
     this.fill.clear();
 
-    const strokeColor = this.occupied ? 0x33ff6b : 0xffd000;
+    this.frame.rect(0, 0, this.w, this.h).stroke({ width: 8, color: 0xffd800 });
 
-    this.frame.rect(0, 0, this.w, this.h).stroke({ width: 8, color: strokeColor });
-
-    this.fill.rect(4, 4, this.w - 8, this.h - 8).fill({ color: 0xffc857, alpha: 0.95 });
+    this.fill.rect(4, 4, this.w - 8, this.h - 8).fill({ color: 0xffd800 });
     this.fill.alpha = this.state === "FILLED" ? 1 : 0;
   }
 }
