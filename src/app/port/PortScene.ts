@@ -83,32 +83,32 @@ export class PortScene extends Container {
   }
 
   private drawBackground() {
-    const { width, height, portWidth, portHeight, entranceX, entranceY, entranceGap } = CONFIG;
+    const { width, height, entranceX, entranceY, entranceGap } = CONFIG;
 
+    // clear all backgrounds
     this.sea.clear();
-    this.sea.roundRect(0, 0, width, height, 0).fill({ color: 0x4d35ff });
-
     this.portArea.clear();
-    this.portArea
-      .rect(0, 25, portWidth, (height + portHeight) / 100)
-      .fill({ color: 0xffd000, alpha: 0.95 });
-    this.portArea
-      .rect(0, 50, portWidth, (portHeight + portHeight) / 100)
-      .fill({ color: 0xffd000, alpha: 0.95 });
-
     this.entranceWalls.clear();
 
+    // sea background
+    this.sea.roundRect(0, 0, width, height, 0).fill({ color: 0x4d35ff });
+
+    // top wall
     this.entranceWalls.moveTo(entranceX + 2, 0);
     this.entranceWalls.lineTo(entranceX + 2, entranceY - entranceGap / 2);
+
+    // bottom wall
     this.entranceWalls.moveTo(entranceX + 2, entranceY + entranceGap / 2);
     this.entranceWalls.lineTo(entranceX + 2, height);
+
+    // walls stroke width
     this.entranceWalls.stroke({ width: 8, color: 0x000000, alpha: 0.3 });
 
-    this.entranceWalls.moveTo(entranceX, 0);
-    this.entranceWalls.lineTo(entranceX, entranceY - entranceGap / 2);
-    this.entranceWalls.moveTo(entranceX, entranceY + entranceGap / 2);
-    this.entranceWalls.lineTo(entranceX, height);
-    this.entranceWalls.stroke({ width: 10, color: 0xffd000, alpha: 1 });
+    // this.entranceWalls.moveTo(entranceX, 0);
+    // this.entranceWalls.lineTo(entranceX, entranceY - entranceGap / 2);
+    // this.entranceWalls.moveTo(entranceX, entranceY + entranceGap / 2);
+    // this.entranceWalls.lineTo(entranceX, height);
+    // this.entranceWalls.stroke({ width: 10, color: 0xffd000, alpha: 1 });
   }
 
   private randomShipType(): ShipType {

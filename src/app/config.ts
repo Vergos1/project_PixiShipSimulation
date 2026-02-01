@@ -2,12 +2,9 @@ export const CONFIG = {
   width: 1100,
   height: 650,
 
-  portWidth: 150,
-  portHeight: 50,
-
-  entranceX: 150,
+  entranceX: 400,
   entranceY: 260,
-  entranceGap: 130,
+  entranceGap: 350,
 
   shipW: 110,
   shipH: 45,

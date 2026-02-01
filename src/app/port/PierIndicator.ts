@@ -2,8 +2,8 @@ import { Container, Graphics } from "pixi.js";
 import type { PierState } from "./types";
 
 export class PierIndicator extends Container {
-  private frame = new Graphics();
-  private fill = new Graphics();
+  private readonly frame = new Graphics();
+  private readonly fill = new Graphics();
 
   constructor(
     public readonly index: number,
@@ -12,7 +12,7 @@ export class PierIndicator extends Container {
   ) {
     super();
 
-    this.frame.rect(0, 0, width, height).stroke({ width: 3, color: 0xffd000 });
+    this.frame.rect(0, 0, width, height).stroke({ width: 8, color: 0xffd000 });
 
     this.fill.rect(3, 3, width - 6, height - 6).fill({ color: 0x56ffbf, alpha: 0 });
 
