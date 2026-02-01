@@ -68,9 +68,9 @@ export class PortScene extends Container {
   }
 
   private createPierIndicators() {
-    const startX = 18; // зліва
-    const startY = 90; // зверху
-    const gap = 26; // відстань між квадратами
+    const startX = 18; // left
+    const startY = 40; // top
+    const gap = 65; // distance between indicators
 
     this.piers.forEach((_, index) => {
       const indicator = new PierIndicator(index);
@@ -140,14 +140,14 @@ export class PortScene extends Container {
 
   private enqueueShip(ship: Ship) {
     ship.setState("QUEUED");
+
     this.port.enqueue(ship.id, ship.type);
 
-    if (ship.type === "GREEN") {
-      //TODO: add to queue
-      if (!this.greenQueueIds.includes(ship.id)) this.greenQueueIds.push(ship.id);
-    } else {
-      //TODO: add to queue
-      if (!this.redQueueIds.includes(ship.id)) this.redQueueIds.push(ship.id);
+    // add to UI queue
+    const queue = ship.type === "GREEN" ? this.greenQueueIds : this.redQueueIds;
+
+    if (!queue.includes(ship.id)) {
+      queue.push(ship.id);
     }
   }
 
