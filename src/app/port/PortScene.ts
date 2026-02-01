@@ -94,21 +94,15 @@ export class PortScene extends Container {
     this.sea.roundRect(0, 0, width, height, 0).fill({ color: 0x4d35ff });
 
     // top wall
-    this.entranceWalls.moveTo(entranceX + 2, 0);
-    this.entranceWalls.lineTo(entranceX + 2, entranceY - entranceGap / 2);
+    this.entranceWalls.moveTo(entranceX, 0);
+    this.entranceWalls.lineTo(entranceX, entranceY - entranceGap / 4);
 
     // bottom wall
-    this.entranceWalls.moveTo(entranceX + 2, entranceY + entranceGap / 2);
-    this.entranceWalls.lineTo(entranceX + 2, height);
+    this.entranceWalls.moveTo(entranceX, entranceY + entranceGap / 2);
+    this.entranceWalls.lineTo(entranceX, height);
 
-    // walls stroke width
-    this.entranceWalls.stroke({ width: 8, color: 0x000000, alpha: 0.3 });
-
-    // this.entranceWalls.moveTo(entranceX, 0);
-    // this.entranceWalls.lineTo(entranceX, entranceY - entranceGap / 2);
-    // this.entranceWalls.moveTo(entranceX, entranceY + entranceGap / 2);
-    // this.entranceWalls.lineTo(entranceX, height);
-    // this.entranceWalls.stroke({ width: 10, color: 0xffd000, alpha: 1 });
+    // walls stroke color
+    this.entranceWalls.stroke({ width: 10, color: 0xffd000, alpha: 1 });
   }
 
   private randomShipType(): ShipType {
