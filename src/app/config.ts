@@ -1,4 +1,5 @@
 export const CONFIG = {
+  // Size
   width: 1100,
   height: 650,
 
