@@ -12,9 +12,9 @@ export const CONFIG = {
   piersCount: 4,
 
   // Entrance
-  entranceX: 220,
+  entranceX: 400,
   entranceY: 325,
-  entranceGap: 160,
+  entranceGap: 300,
 
   // Ship
   shipW: 110,
