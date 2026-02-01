@@ -2,42 +2,29 @@ import type { ShipType } from "./types";
 import { Pier } from "./Pier";
 
 export class Port {
-    public entranceBusy = false;
+  public entranceBusy = false;
 
-    private queueGreen: string[] = [];
-    private queueRed: string[] = [];
+  constructor(public readonly piers: Pier[]) {}
 
-    constructor(public piers: Pier[]) { }
+  findPierForGreen(): number | null {
+    return this.piers.findIndex((p) => !p.occupied && p.state === "FILLED");
+  }
 
-    enqueue(shipId: string, type: ShipType) {
-        if (type === "GREEN") this.queueGreen.push(shipId);
-        else this.queueRed.push(shipId);
-    }
+  findPierForRed(): number | null {
+    return this.piers.findIndex((p) => !p.occupied && p.state === "EMPTY");
+  }
 
-    dequeue(shipId: string) {
-        this.queueGreen = this.queueGreen.filter((id) => id !== shipId);
-        this.queueRed = this.queueRed.filter((id) => id !== shipId);
-    }
+  canServe(type: ShipType) {
+    return type === "GREEN" ? this.findPierForGreen() !== -1 : this.findPierForRed() !== -1;
+  }
 
-    findPierForGreen(): number | null {
-        const idx = this.piers.findIndex((p) => !p.occupied && p.state === "FILLED");
-        return idx >= 0 ? idx : null;
-    }
+  reservePier(index: number | null) {
+    if (index === null) return;
+    this.piers[index].setOccupied(true);
+  }
 
-    findPierForRed(): number | null {
-        const idx = this.piers.findIndex((p) => !p.occupied && p.state === "EMPTY");
-        return idx >= 0 ? idx : null;
-    }
-
-    canServe(type: ShipType) {
-        return type === "GREEN" ? this.findPierForGreen() !== null : this.findPierForRed() !== null;
-    }
-
-    reservePier(pierIndex: number, shipType: "RED" | "GREEN") {
-        this.piers[pierIndex].setOccupied(true, shipType);
-    }
-
-    releasePier(pierIndex: number) {
-        this.piers[pierIndex].setOccupied(false, undefined);
-    }
+  releasePier(index: number | null) {
+    if (index === null) return;
+    this.piers[index].setOccupied(false);
+  }
 }

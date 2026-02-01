@@ -1,108 +1,70 @@
-import { Application, Container, Graphics } from "pixi.js";
+import { Container, Graphics } from "pixi.js";
 import { CONFIG } from "../config";
-import { tweenTo } from "../utils/tween";
-import type { ShipType } from "./types";
 import { Pier } from "./Pier";
-import { Ship } from "./Ship";
 import { Port } from "./Port";
-import { PierIndicator } from "./PierIndicator";
+import { Ship } from "./Ship";
+import type { ShipType } from "./types";
+import { tweenTo } from "../utils/tween";
 
 export class PortScene extends Container {
-  private readonly app: Application;
-
   private readonly sea = new Graphics();
-  private readonly portArea = new Graphics();
   private readonly entranceWalls = new Graphics();
-
   private readonly shipsLayer = new Container();
   private readonly piersLayer = new Container();
-  private readonly uiLayer = new Container();
 
   private readonly piers: Pier[] = [];
   private readonly port: Port;
 
   private readonly activeShips = new Map<string, Ship>();
+  private spawnTimerId: ReturnType<typeof setInterval> | undefined;
 
-  private readonly pierIndicatorsLayer = new Container();
-  private readonly pierIndicators: PierIndicator[] = [];
-
-  private greenQueueIds: string[] = [];
-  private redQueueIds: string[] = [];
-
-  constructor(app: Application) {
+  constructor() {
     super();
-    this.app = app;
-
     this.drawBackground();
-    this.addChild(this.sea, this.portArea, this.entranceWalls);
-
-    CONFIG.piers.forEach((p, i) => {
-      const pier = new Pier(i, p.x, p.y, CONFIG.pierW, CONFIG.pierH);
-      pier.setState("EMPTY");
-      this.piers.push(pier);
-      this.piersLayer.addChild(pier);
-    });
-    this.createPierIndicators();
-    this.addChild(this.pierIndicatorsLayer);
+    this.createPiers();
 
     this.port = new Port(this.piers);
 
-    this.addChild(this.shipsLayer);
-    this.addChild(this.piersLayer);
-    this.addChild(this.uiLayer);
-
-    this.spawnShip();
-    globalThis.setInterval(() => this.spawnShip(), CONFIG.spawnEveryMs);
-
-    this.app.ticker.add(() => {
-      this.tryDispatchFromQueues();
-      this.relayoutQueues();
-    });
+    this.addChild(this.sea, this.entranceWalls, this.piersLayer, this.shipsLayer);
   }
 
-  private syncPierIndicator(index: number) {
-    const pier = this.piers[index];
-    const indicator = this.pierIndicators[index];
+  start() {
+    const tick = () => void this.spawnShip().catch(() => undefined);
 
-    indicator.setState(pier.state);
+    tick();
+    this.spawnTimerId = globalThis.setInterval(tick, CONFIG.spawnEveryMs);
   }
 
-  private createPierIndicators() {
-    const startX = 18; // left
-    const startY = 40; // top
-    const gap = 65; // distance between indicators
-
-    this.piers.forEach((_, index) => {
-      const indicator = new PierIndicator(index);
-
-      indicator.position.set(startX, startY + index * (80 + gap));
-
-      this.pierIndicators.push(indicator);
-      this.pierIndicatorsLayer.addChild(indicator);
-    });
+  stop() {
+    if (this.spawnTimerId !== undefined) {
+      globalThis.clearInterval(this.spawnTimerId);
+      this.spawnTimerId = undefined;
+    }
   }
 
   private drawBackground() {
-    const { width, height, entranceX, entranceY, entranceGap } = CONFIG;
+    this.sea.roundRect(0, 0, CONFIG.width, CONFIG.height, 0).fill({ color: 0x4d35ff });
 
-    // clear all backgrounds
-    this.sea.clear();
-    this.portArea.clear();
-    this.entranceWalls.clear();
+    this.entranceWalls
+      .moveTo(CONFIG.entranceX, 0)
+      .lineTo(CONFIG.entranceX, CONFIG.entranceY - CONFIG.entranceGap / 2)
+      .moveTo(CONFIG.entranceX, CONFIG.entranceY + CONFIG.entranceGap / 2)
+      .lineTo(CONFIG.entranceX, CONFIG.height)
+      .stroke({ width: 10, color: 0xffd000 });
+  }
 
-    // sea background
-    this.sea.roundRect(0, 0, width, height, 0).fill({ color: 0x4d35ff });
-
-    // top wall
-    this.entranceWalls.moveTo(entranceX, 0);
-    this.entranceWalls.lineTo(entranceX, entranceY - entranceGap / 4);
-
-    // bottom wall
-    this.entranceWalls.moveTo(entranceX, entranceY + entranceGap / 2);
-    this.entranceWalls.lineTo(entranceX, height);
-
-    // walls stroke color
-    this.entranceWalls.stroke({ width: 10, color: 0xffd000, alpha: 1 });
+  private createPiers() {
+    for (let i = 0; i < CONFIG.piersCount; i++) {
+      const pier = new Pier(
+        i,
+        CONFIG.pierX,
+        CONFIG.pierStartY + i * (CONFIG.pierH + CONFIG.pierGap),
+        CONFIG.pierW,
+        CONFIG.pierH,
+      );
+      this.piers.push(pier);
+      this.piersLayer.addChild(pier);
+    }
   }
 
   private randomShipType(): ShipType {
@@ -110,187 +72,49 @@ export class PortScene extends Container {
   }
 
   private async spawnShip() {
-    if (this.activeShips.size >= CONFIG.maxShips) {
-      return;
-    }
+    if (this.activeShips.size >= CONFIG.maxShips) return;
 
-    const type = this.randomShipType();
-
-    const ship = new Ship(type, CONFIG.shipW, CONFIG.shipH);
-    ship.position.set(CONFIG.width + 60, 120 + Math.random() * 420);
-    ship.setState("APPROACHING");
-
-    this.activeShips.set(ship.id, ship);
+    const ship = new Ship(this.randomShipType(), CONFIG.shipW, CONFIG.shipH);
+    ship.position.set(CONFIG.width + 60, Math.random() * 400 + 100);
     this.shipsLayer.addChild(ship);
+    this.activeShips.set(ship.id, ship);
 
-    const targetY = type === "RED" ? CONFIG.queueRedStartY : CONFIG.queueGreenStartY;
-    await tweenTo(ship, { x: CONFIG.queueX + 140, y: targetY }, CONFIG.approachMs);
+    await tweenTo(ship, { x: CONFIG.queueX }, CONFIG.approachMs);
 
-    this.handleArrival(ship);
+    this.tryServe(ship);
   }
 
-  private handleArrival(ship: Ship) {
-    if (!this.port.canServe(ship.type)) {
-      this.enqueueShip(ship);
-      return;
-    }
-
-    this.sendShipToEntrance(ship);
-  }
-
-  private enqueueShip(ship: Ship) {
-    ship.setState("QUEUED");
-
-    this.port.enqueue(ship.id, ship.type);
-
-    // add to UI queue
-    const queue = ship.type === "GREEN" ? this.greenQueueIds : this.redQueueIds;
-
-    if (!queue.includes(ship.id)) {
-      queue.push(ship.id);
-    }
-  }
-
-  private async sendShipToEntrance(ship: Ship) {
+  private async tryServe(ship: Ship) {
     const pierIndex =
       ship.type === "GREEN" ? this.port.findPierForGreen() : this.port.findPierForRed();
 
-    if (pierIndex === null) {
-      this.enqueueShip(ship);
-      return;
-    }
+    if (pierIndex === -1) return;
 
     ship.assignedPierIndex = pierIndex;
-    this.port.reservePier(pierIndex, ship.type);
+    this.port.reservePier(pierIndex);
 
-    await tweenTo(ship, { x: CONFIG.entranceX + 70, y: CONFIG.entranceY }, 650);
+    await tweenTo(ship, { x: CONFIG.entranceX }, CONFIG.enterMs);
 
-    ship.setState("ENTERING");
-    await this.passEntranceAndDock(ship);
-  }
+    const pier = this.piers[pierIndex!];
+    await tweenTo(
+      ship,
+      {
+        x: pier.x + pier.width + 10,
+        y: pier.y,
+      },
+      CONFIG.dockMs,
+    );
 
-  private async passEntranceAndDock(ship: Ship) {
-    if (this.port.entranceBusy) return;
-
-    this.port.entranceBusy = true;
-
-    await tweenTo(ship, { x: CONFIG.entranceX - 40, y: CONFIG.entranceY }, CONFIG.enterMs);
-
-    this.port.entranceBusy = false;
-
-    const pier = this.piers[ship.assignedPierIndex!];
-    ship.setState("TO_PIER");
-
-    const dockPoint = {
-      x: pier.x + (CONFIG.pierW - CONFIG.shipW) / 2,
-      y: pier.y + (CONFIG.pierH - CONFIG.shipH) / 2,
-    };
-
-    await tweenTo(ship, dockPoint, CONFIG.dockMs);
-
-    ship.setState("SERVICING");
-
-    await this.serviceShip(ship, pier.index);
-  }
-
-  private async serviceShip(ship: Ship, pierIndex: number) {
-    await new Promise<void>((resolve) => setTimeout(resolve, CONFIG.serviceTimeMs));
-
-    const pier = this.piers[pierIndex];
+    await new Promise((r) => setTimeout(r, CONFIG.serviceTimeMs));
 
     if (ship.type === "RED") {
       ship.setCargo(false);
       pier.setState("FILLED");
-      this.syncPierIndicator(pierIndex);
     } else {
       ship.setCargo(true);
       pier.setState("EMPTY");
-      this.syncPierIndicator(pierIndex);
     }
 
     this.port.releasePier(pierIndex);
-    await this.leavePort(ship);
-  }
-
-  private async leavePort(ship: Ship) {
-    ship.setState("EXITING");
-
-    await tweenTo(ship, { x: CONFIG.entranceX - 40, y: CONFIG.entranceY }, CONFIG.leaveMs);
-
-    while (this.port.entranceBusy) {
-      await new Promise((r) => setTimeout(r, 100));
-    }
-    this.port.entranceBusy = true;
-
-    await tweenTo(ship, { x: CONFIG.entranceX + 90, y: CONFIG.entranceY }, CONFIG.exitMs);
-
-    this.port.entranceBusy = false;
-
-    await tweenTo(ship, { x: CONFIG.width + 160 }, 1400);
-
-    ship.setState("DONE");
-
-    this.cleanupShip(ship);
-  }
-
-  private cleanupShip(ship: Ship) {
-    this.port.dequeue(ship.id);
-    this.greenQueueIds = this.greenQueueIds.filter((id) => id !== ship.id);
-    this.redQueueIds = this.redQueueIds.filter((id) => id !== ship.id);
-
-    this.activeShips.delete(ship.id);
-    ship.destroy({ children: true });
-  }
-
-  private tryDispatchFromQueues() {
-    if (this.port.entranceBusy) return;
-
-    for (const id of this.greenQueueIds) {
-      const ship = this.activeShips.get(id);
-      if (!ship) continue;
-
-      if (this.port.canServe("GREEN")) {
-        this.port.dequeue(id);
-        this.greenQueueIds = this.greenQueueIds.filter((x) => x !== id);
-        this.sendShipToEntrance(ship);
-        return;
-      }
-    }
-
-    for (const id of this.redQueueIds) {
-      const ship = this.activeShips.get(id);
-      if (!ship) continue;
-
-      if (this.port.canServe("RED")) {
-        this.port.dequeue(id);
-        this.redQueueIds = this.redQueueIds.filter((x) => x !== id);
-        this.sendShipToEntrance(ship);
-        return;
-      }
-    }
-  }
-
-  private relayoutQueues() {
-    this.greenQueueIds.forEach((id, idx) => {
-      const s = this.activeShips.get(id);
-      if (!s) return;
-
-      const targetX = CONFIG.queueX + idx * 140;
-      const targetY = CONFIG.queueGreenStartY;
-
-      s.x += (targetX - s.x) * 0.08;
-      s.y += (targetY - s.y) * 0.08;
-    });
-
-    this.redQueueIds.forEach((id, idx) => {
-      const s = this.activeShips.get(id);
-      if (!s) return;
-
-      const targetX = CONFIG.queueX + idx * 140;
-      const targetY = CONFIG.queueRedStartY;
-
-      s.x += (targetX - s.x) * 0.08;
-      s.y += (targetY - s.y) * 0.08;
-    });
   }
 }
