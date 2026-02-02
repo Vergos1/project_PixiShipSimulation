@@ -223,9 +223,10 @@ export class PortScene extends Container {
 
     const service = { p: ship.type === "GREEN" ? 1 : 0 };
     const serviceTo = ship.type === "GREEN" ? 0 : 1;
-    await tweenTo(service, { p: serviceTo }, CONFIG.serviceTimeMs, undefined, () =>
-      pier.setFillProgress(service.p),
-    );
+    await tweenTo(service, { p: serviceTo }, CONFIG.serviceTimeMs, undefined, () => {
+      pier.setFillProgress(service.p);
+      ship.setCargoProgress(1 - service.p);
+    });
 
     if (ship.type === "RED") {
       ship.setCargo(false);
