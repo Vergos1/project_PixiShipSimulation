@@ -20,6 +20,7 @@ export class PortScene extends Container {
   private readonly queueRed: Ship[] = [];
   private readonly queueGreen: Ship[] = [];
   private readonly queueGap = 12;
+  private readonly queueStepX = CONFIG.shipW + this.queueGap;
 
   constructor() {
     super();
@@ -77,14 +78,19 @@ export class PortScene extends Container {
   private async spawnShip() {
     if (this.activeShips.size >= CONFIG.maxShips) return;
 
-    const ship = new Ship(this.randomShipType(), CONFIG.shipW, CONFIG.shipH);
+    const type = this.randomShipType();
+    const ship = new Ship(type, CONFIG.shipW, CONFIG.shipH);
     ship.state = "SPAWNING";
     ship.position.set(CONFIG.width + 60, Math.random() * 400 + 100);
     this.shipsLayer.addChild(ship);
     this.activeShips.set(ship.id, ship);
 
+    const provisionalIndex = type === "GREEN" ? this.queueGreen.length : this.queueRed.length;
+    const laneY = type === "GREEN" ? CONFIG.queueGreenStartY : CONFIG.queueRedStartY;
+    const approachX = CONFIG.queueX + provisionalIndex * this.queueStepX;
+
     ship.state = "APPROACHING";
-    await tweenTo(ship, { x: CONFIG.queueX }, CONFIG.approachMs);
+    await tweenTo(ship, { x: approachX, y: laneY }, CONFIG.approachMs);
 
     this.onArriveToQueue(ship);
   }
@@ -129,15 +135,15 @@ export class PortScene extends Container {
 
     for (let i = 0; i < this.queueRed.length; i++) {
       const s = this.queueRed[i];
-      const x = CONFIG.queueX;
-      const y = CONFIG.queueRedStartY + i * (CONFIG.shipH + this.queueGap);
+      const x = CONFIG.queueX + i * this.queueStepX;
+      const y = CONFIG.queueRedStartY;
       await move(s, x, y);
     }
 
     for (let i = 0; i < this.queueGreen.length; i++) {
       const s = this.queueGreen[i];
-      const x = CONFIG.queueX;
-      const y = CONFIG.queueGreenStartY + i * (CONFIG.shipH + this.queueGap);
+      const x = CONFIG.queueX + i * this.queueStepX;
+      const y = CONFIG.queueGreenStartY;
       await move(s, x, y);
     }
   }
