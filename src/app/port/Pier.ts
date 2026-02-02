@@ -7,6 +7,7 @@ export class Pier extends Container {
 
   private readonly frame = new Graphics();
   private readonly fill = new Graphics();
+  private fillProgress = 0;
 
   constructor(
     public readonly index: number,
@@ -24,6 +25,12 @@ export class Pier extends Container {
 
   setState(state: PierState) {
     this.state = state;
+    this.fillProgress = state === "FILLED" ? 1 : 0;
+    this.render();
+  }
+
+  setFillProgress(progress01: number) {
+    this.fillProgress = Math.max(0, Math.min(1, progress01));
     this.render();
   }
 
@@ -38,7 +45,12 @@ export class Pier extends Container {
 
     this.frame.rect(0, 0, this.w, this.h).stroke({ width: 8, color: 0xffd800 });
 
-    this.fill.rect(4, 4, this.w - 8, this.h - 8).fill({ color: 0xffd800 });
-    this.fill.alpha = this.state === "FILLED" ? 1 : 0;
+    const innerW = this.w - 8;
+    const innerH = this.h - 8;
+    const fillH = innerH * this.fillProgress;
+    const fillY = 4 + (innerH - fillH);
+
+    this.fill.rect(4, fillY, innerW, fillH).fill({ color: 0xffd800 });
+    this.fill.alpha = this.fillProgress > 0 ? 1 : 0;
   }
 }

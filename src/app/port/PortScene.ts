@@ -220,7 +220,12 @@ export class PortScene extends Container {
     this.pumpQueues();
 
     ship.state = "SERVICING";
-    await new Promise((r) => setTimeout(r, CONFIG.serviceTimeMs));
+
+    const service = { p: ship.type === "GREEN" ? 1 : 0 };
+    const serviceTo = ship.type === "GREEN" ? 0 : 1;
+    await tweenTo(service, { p: serviceTo }, CONFIG.serviceTimeMs, undefined, () =>
+      pier.setFillProgress(service.p),
+    );
 
     if (ship.type === "RED") {
       ship.setCargo(false);
