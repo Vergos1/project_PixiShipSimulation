@@ -21,6 +21,7 @@ export class PortScene extends Container {
   private readonly queueGreen: Ship[] = [];
   private readonly queueGap = 12;
   private readonly queueStepX = CONFIG.shipW + this.queueGap;
+  private readonly queueReflowDelayMs = 220;
 
   constructor() {
     super();
@@ -155,8 +156,6 @@ export class PortScene extends Container {
     if (greenHead) {
       const idx = this.port.findPierForGreen();
       if (idx !== null) {
-        this.dequeue(greenHead);
-        void this.layoutQueues(true).catch(() => undefined);
         void this.serveShip(greenHead, idx).catch(() => undefined);
         return;
       }
@@ -166,11 +165,13 @@ export class PortScene extends Container {
     if (redHead) {
       const idx = this.port.findPierForRed();
       if (idx !== null) {
-        this.dequeue(redHead);
-        void this.layoutQueues(true).catch(() => undefined);
         void this.serveShip(redHead, idx).catch(() => undefined);
       }
     }
+  }
+
+  private sleep(ms: number) {
+    return new Promise<void>((resolve) => globalThis.setTimeout(resolve, ms));
   }
 
   private async serveShip(ship: Ship, pierIndex: number) {
@@ -189,11 +190,23 @@ export class PortScene extends Container {
     ship.assignedPierIndex = pierIndex;
     this.port.reservePier(pierIndex);
 
+    const wasQueued = ship.state === "QUEUED";
+
     this.port.entranceBusy = true;
     ship.state = "ENTERING";
 
     const entranceHoldX = CONFIG.entranceX + 80;
-    await tweenTo(ship, { x: entranceHoldX, y: CONFIG.entranceY }, CONFIG.enterMs);
+
+    if (wasQueued) this.dequeue(ship);
+
+    const enteringTween = tweenTo(ship, { x: entranceHoldX, y: CONFIG.entranceY }, CONFIG.enterMs);
+
+    if (wasQueued) {
+      await this.sleep(this.queueReflowDelayMs);
+      await this.layoutQueues(true);
+    }
+
+    await enteringTween;
 
     ship.state = "TO_PIER";
     const pier = this.piers[pierIndex];
