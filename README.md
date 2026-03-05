@@ -1,158 +1,80 @@
 # Port Simulation
 
-Visualization of port operations with ship animations, queues, and pier management.
+Port simulation — ships arrive, load/unload cargo and queue at piers, built with Pixi.js and TweenJS.
 
-## Description
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
+![Pixi.js](https://img.shields.io/badge/Pixi.js-E91E8C?style=flat&logo=pixijs&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat&logo=vite&logoColor=white)
 
-A port simulation where ships arrive, are serviced at piers, and depart. The project is implemented using object-oriented approach, TypeScript, Pixi.js for visualization, and TweenJS for animations.
+## About
 
-## Functionality
+An interactive port simulation where ships arrive from the sea, queue at the entrance, dock at piers to load or unload cargo, and depart. Built with an object-oriented architecture using Pixi.js for canvas rendering and TweenJS for smooth ship animations.
 
-### Main Components:
+## Features
 
-1. **Sea** - rectangular blue work area
-2. **Port** - highlighted rectangular area with a single entrance
-   - Only one ship can pass through the entrance at a time
-   - The port has 4 piers, all empty at the start
-3. **Piers** - rectangular areas
-   - If a pier is filled with cargo - the rectangle is filled with color
-   - If empty - transparent
-   - Only one ship can dock at a pier at a time
-4. **Ships** - green or red rectangles
-   - **Green ships** - arrive empty, get loaded with cargo
-   - **Red ships** - arrive with cargo, get unloaded
-   - A filled ship is displayed as a filled rectangle
-   - An empty ship - only outline
+- **Ship spawning** — new ship every 8 seconds with random type (red/green)
+- **Two ship types** — green ships arrive empty and get loaded, red ships arrive with cargo and get unloaded
+- **4 piers** — each pier can be filled or empty, only one ship at a time
+- **Queue system** — ships wait if no appropriate pier is available
+- **Single entrance** — only one ship can pass through the port entrance at a time
+- **Smooth animations** — all movements via TweenJS (approach, entry, docking, exit)
+- **HUD logging** — real-time event log of port activity
+- **Configurable** — spawn rate, service time, pier count and positions via `config.ts`
 
-### Work Logic:
+## How It Works
 
-- Ships arrive from the opposite side of the sea
-- Ship type (green/red) is chosen randomly
-- Ship spawn frequency: **1 every 8 seconds**
-- Time spent in port: **5 seconds**
-- Green ships queue if there is no cargo on free piers
-- Red ships queue if all free piers are filled
+1. Ship spawns on the opposite side of the sea every 8 seconds
+2. Ship moves toward the port queue area
+3. Green ships wait for a filled pier — Red ships wait for an empty pier
+4. Ship enters through the single entrance and docks
+5. After 5 seconds the cargo is exchanged and the ship departs
 
-## Technologies
+## Tech Stack
 
-- **TypeScript** - code typing
-- **Pixi.js v8.8.1** - visualization and rendering
-- **TweenJS v25.0.0** - smooth ship movement animations
-- **Vite** - build and development
+| Technology | Purpose |
+|---|---|
+| TypeScript | Type safety and OOP architecture |
+| Pixi.js v8 | Canvas rendering and visualization |
+| TweenJS | Smooth ship movement animations |
+| Vite | Build tool |
 
 ## Project Structure
 
 ```
 src/
 ├── app/
-│   ├── config.ts          # Configuration (sizes, timings, positions)
-│   ├── index.ts           # Main GameApp class
+│   ├── config.ts       # Sizes, timings, positions
+│   ├── index.ts        # Main GameApp class
 │   ├── port/
-│   │   ├── PortScene.ts   # Main scene with simulation logic
-│   │   ├── Port.ts        # Port class (pier and queue management)
-│   │   ├── Pier.ts        # Pier class
-│   │   ├── Ship.ts        # Ship class
-│   │   └── types.ts       # TypeScript types
+│   │   ├── PortScene.ts  # Simulation logic
+│   │   ├── Port.ts       # Pier and queue management
+│   │   ├── Pier.ts       # Pier class
+│   │   ├── Ship.ts       # Ship class
+│   │   └── types.ts      # TypeScript types
 │   ├── ui/
-│   │   └── HUD.ts         # Event logging
+│   │   └── HUD.ts        # Event logging
 │   └── utils/
-│       ├── tween.ts       # Animation utilities
-│       └── id.ts          # Unique ID generation
-├── main.ts                # Entry point
+│       ├── tween.ts      # Animation utilities
+│       └── id.ts         # Unique ID generation
+├── main.ts             # Entry point
 └── styles/
-    └── index.css          # Styles
+    └── index.css
 ```
 
-## Installation and Launch
-
-### Requirements
-
-- Node.js (version 18 or higher)
-- npm or yarn
-
-### Step 1: Install Dependencies
+## Getting Started
 
 ```bash
+# Install dependencies
 npm install
-```
 
-### Step 2: Run in Development Mode
-
-```bash
+# Start development server
 npm run dev
-```
 
-Or:
-
-```bash
-npm start
-```
-
-After launch, open your browser at the address shown by Vite (usually `http://localhost:5173`).
-
-### Step 3: Build for Production
-
-```bash
+# Build for production
 npm run build
 ```
 
-The built project will be in the `dist/` folder.
+## Author
 
-### Additional Commands
-
-```bash
-# Check code formatting
-npm run format:check
-
-# Format code
-npm run format
-
-# Run linter
-npm run lint
-```
-
-## How It Works
-
-### Architecture
-
-The project uses an object-oriented approach:
-
-- **GameApp** - main class, initializes Pixi.js Application
-- **PortScene** - main scene, manages the simulation
-- **Port** - manages piers and ship queues
-- **Pier** - represents a single pier with state (EMPTY/FILLED)
-- **Ship** - represents a ship with type (RED/GREEN) and cargo state
-
-### Workflow
-
-1. **Ship Spawn**: Every 8 seconds a new ship is created (random type)
-2. **Approach to Port**: Ship moves to the queue area
-3. **Service Availability Check**:
-   - Green ships look for a pier with cargo (FILLED)
-   - Red ships look for an empty pier (EMPTY)
-4. **Queue**: If no appropriate pier is available, ship joins the queue
-5. **Port Entry**: Only one ship can pass through the entrance at a time
-6. **Service**: Ship docks at the pier, waits 5 seconds
-7. **Cargo Exchange**:
-   - Red ship unloads → pier becomes FILLED
-   - Green ship loads → pier becomes EMPTY
-8. **Exit**: Ship exits through the entrance and departs
-
-### Animations
-
-All ship movements are implemented using TweenJS:
-- Approach to port
-- Entry through entrance
-- Movement to pier
-- Exit from port
-- Movement in queue
-
-## Configuration
-
-Main parameters can be changed in `src/app/config.ts`:
-
-- `spawnEveryMs` - ship spawn frequency (default 8000 ms)
-- `serviceTimeMs` - service time (default 5000 ms)
-- `maxShips` - maximum number of ships simultaneously
-- `piers` - positions and number of piers
-- Sizes and positions of elements
+Designed and developed by **Ihor Yanchuk**
+[Portfolio](https://github.com/Vergos1) · [GitHub](https://github.com/Vergos1)
